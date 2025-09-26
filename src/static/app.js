@@ -47,6 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
 
+        // Add "Register" button to each activity card
+        const registerButton = document.createElement("button");
+        registerButton.textContent = "Register";
+        registerButton.className = "register-btn";
+        registerButton.setAttribute("data-activity", name);
+        activityCard.appendChild(registerButton);
+
         activitiesList.appendChild(activityCard);
 
         // Add option to select dropdown
@@ -59,6 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add event listeners to delete buttons
       document.querySelectorAll(".delete-btn").forEach((button) => {
         button.addEventListener("click", handleUnregister);
+      });
+
+      // Add event listeners to register buttons
+      document.querySelectorAll(".register-btn").forEach((button) => {
+        button.addEventListener("click", handleRegister);
       });
     } catch (error) {
       activitiesList.innerHTML =
@@ -107,6 +119,41 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.className = "error";
       messageDiv.classList.remove("hidden");
       console.error("Error unregistering:", error);
+    }
+  }
+
+  // Handle register functionality
+  async function handleRegister(event) {
+    const activity = event.target.getAttribute("data-activity");
+    const email = prompt("Enter your email to register:");
+
+    if (!email) {
+      alert("Email is required to register.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/activities/${encodeURIComponent(activity)}/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      if (response.ok) {
+        alert(`Successfully registered for ${activity}!`);
+        fetchActivities(); // Refresh the activities list
+      } else {
+        const error = await response.json();
+        alert(`Failed to register: ${error.detail}`);
+      }
+    } catch (error) {
+      console.error("Error registering for activity:", error);
+      alert("An error occurred. Please try again later.");
     }
   }
 
